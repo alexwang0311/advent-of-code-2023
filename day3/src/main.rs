@@ -50,7 +50,7 @@ fn main() {
                 sum += numbers[0].parse::<i32>().unwrap() * numbers[1].parse::<i32>().unwrap();
             }
             //p2
-            //NOTE: need to store the schema state after each search
+            //NOTE: need to restore the schema state after each search
             schema = snapshot;
         } 
     }
@@ -67,6 +67,7 @@ fn find_number(x: i32, y:i32, schema: &mut Vec<Vec<char>>, sum: &mut i32) {
         schema[x as usize][left as usize] = '.';
         left -= 1;
     }
+    //search right
     let mut right: i32 = y + 1;
     while right < schema[0].len().try_into().unwrap() && schema[x as usize][right as usize].is_digit(10) {
         number = number + &schema[x as usize][right as usize].to_string();
@@ -87,6 +88,7 @@ fn find_number_p2(x: i32, y:i32, schema: &mut Vec<Vec<char>>, numbers: &mut Vec<
         schema[x as usize][left as usize] = '.';
         left -= 1;
     }
+    //search right
     let mut right: i32 = y + 1;
     while right < schema[0].len().try_into().unwrap() && schema[x as usize][right as usize].is_digit(10) {
         number = number + &schema[x as usize][right as usize].to_string();
