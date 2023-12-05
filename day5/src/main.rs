@@ -17,7 +17,6 @@ struct Range(u64, u64);
 
 fn main() {
     if let Ok(lines) = read_lines("./input.txt") {
-        let mut count: u32 = 0;
         let mut seeds: Vec<u64> = Vec::new();
         let mut maps: HashMap<String, Vec<Entry>> = HashMap::new();
         let mut cur_map: Option<String> = None;
@@ -52,10 +51,9 @@ fn main() {
                     
                 }
             }
-            count += 1;
         }
         //println!("{:?}", seeds);
-        for (key, map) in &mut maps {
+        for (_, map) in &mut maps {
             map.sort_by(|a, b| a.src.cmp(&b.src));
             //println!("{:?}", map);
         }
@@ -78,7 +76,7 @@ fn main() {
                 new_ranges.append(&mut transformed);
             }
             ranges = new_ranges;
-            if let Some((from, to)) = name.split_once("-to-") {
+            if let Some((_, to)) = name.split_once("-to-") {
                 map_name = maps.keys().filter(|key| key.starts_with(to)).collect::<Vec<&String>>();
             }
             println!("--------------------------------");
@@ -161,7 +159,7 @@ fn transform_range(range: &Range, map: &Vec<Entry>) -> Vec<Range> {
                         break;
                     }
                     else {
-                        if (index == map.len() - 1) {
+                        if index == map.len() - 1 {
                             println!("({}, {}) is to the right of ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
                             transformed.push(Range(range.0, range.1));
                         }
