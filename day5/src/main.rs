@@ -4,6 +4,7 @@ use std::path::Path;
 use std::collections::HashMap;
 use priority_queue::DoublePriorityQueue;
 use std::collections::VecDeque;
+use std::time::Instant;
 
 #[derive(Debug)]
 struct Entry {
@@ -65,24 +66,25 @@ fn main() {
             i += 2;
         }
         //println!("{:?}", ranges);
+        let clock = Instant::now();
         let mut map_name: Vec<&String> = maps.keys().filter(|key| key.starts_with("seed")).collect::<Vec<&String>>();
         while map_name.len() > 0 {
-            println!("Ranges: {:?}", ranges);
+            //println!("Ranges: {:?}", ranges);
             let name = map_name[0];
             let mut new_ranges: Vec<Range> = Vec::new();
             for range in ranges {
                 let mut transformed = transform_range(&range, &maps[name]);
-                println!("from {:?} to {:?}", range, transformed);
+                //println!("from {:?} to {:?}", range, transformed);
                 new_ranges.append(&mut transformed);
             }
             ranges = new_ranges;
             if let Some((_, to)) = name.split_once("-to-") {
                 map_name = maps.keys().filter(|key| key.starts_with(to)).collect::<Vec<&String>>();
             }
-            println!("--------------------------------");
+            //println!("--------------------------------");
         }
         ranges.sort_by(|a, b| a.0.cmp(&b.0));
-        println!("final ranges: {:?}", ranges);
+        println!("final ranges: {:?} -- time {:?}", ranges[0], clock.elapsed());
 
         /*
         //p1
@@ -125,7 +127,7 @@ fn transform_range(range: &Range, map: &Vec<Entry>) -> Vec<Range> {
         //TODO: this is ugly af
         for (index, entry) in map.iter().enumerate() {
             if range.1 < entry.src {
-                println!("({}, {}) is to the left of ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
+                //println!("({}, {}) is to the left of ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
                 transformed.push(Range(range.0, range.1));
                 break;
             }
@@ -133,34 +135,34 @@ fn transform_range(range: &Range, map: &Vec<Entry>) -> Vec<Range> {
             if range.1 >= entry.src {
                 if range.1 <= entry.src + entry.range {
                     if range.0 < entry.src {
-                        println!("({}, {}) left intersects ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
+                        //println!("({}, {}) left intersects ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
                         transformed.push(Range(range.0, entry.src - 1));
                         transformed.push(Range(entry.dst, entry.dst + range.1 - entry.src));
                         break;
                     }
                     else {
-                        println!("({}, {}) is inside ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
+                        //println!("({}, {}) is inside ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
                         transformed.push(Range(entry.dst + range.0 - entry.src, entry.dst + range.1 - entry.src));
                         break;
                     }
                 }
                 else {
                     if range.0 < entry.src {
-                        println!("({}, {}) includes ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
+                        //println!("({}, {}) includes ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
                         transformed.push(Range(range.0, entry.src - 1));
                         transformed.push(Range(entry.dst, entry.dst + entry.range - 1));
                         break;
                     }
                     else if range.0 < entry.src + entry.range {
-                        println!("({}, {}) right intersects ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
+                        //println!("({}, {}) right intersects ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
                         ranges_to_process.push_back(Range(entry.src + entry.range, range.1));
-                        println!("adding ({}, {}) for processing", entry.src + entry.range, range.1);
+                        //println!("adding ({}, {}) for processing", entry.src + entry.range, range.1);
                         transformed.push(Range(entry.dst + range.0 - entry.src, entry.dst + entry.range - 1));
                         break;
                     }
                     else {
                         if index == map.len() - 1 {
-                            println!("({}, {}) is to the right of ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
+                            //println!("({}, {}) is to the right of ({}, {})", range.0, range.1, entry.src, entry.src + entry.range - 1);
                             transformed.push(Range(range.0, range.1));
                         }
                     }
