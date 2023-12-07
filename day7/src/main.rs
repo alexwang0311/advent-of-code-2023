@@ -113,95 +113,81 @@ fn build_hand_p2(str: &str, bid: u32) -> Option<Hand> {
 
     let cards = str.chars().into_iter().map(|c| char_to_u32_p2(&c)).collect::<Vec<u32>>();
 
-    match hm.keys().len() {
-        5 => Some(Hand {
+    match (hm.keys().len(), j_count) {
+        (5, _) => Some(Hand {
             hand_type: Type::HighCard,
             cards: cards,
             bid: bid,
             str: str.to_owned()
         }),
-        4 => Some(Hand {
+        (4, _) => Some(Hand {
             hand_type: Type::OnePair,
             cards: cards,
             bid: bid,
             str: str.to_owned()
         }),
-        3 => {
-            match j_count {
-                1 | 2 => Some(Hand {
+        (3, 1 | 2) => Some(Hand {
+            hand_type: Type::ThreeOfAKind,
+            cards: cards,
+            bid: bid,
+            str: str.to_owned()
+        }),
+        (3, _) => {
+            match hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
+                Some(_) => Some(Hand {
                     hand_type: Type::ThreeOfAKind,
                     cards: cards,
                     bid: bid,
                     str: str.to_owned()
                 }),
-                _ => {
-                    if let Some(_) = hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
-                        Some(Hand {
-                            hand_type: Type::ThreeOfAKind,
-                            cards: cards,
-                            bid: bid,
-                            str: str.to_owned()
-                        })
-                    }
-                    else {
-                        Some(Hand {
-                            hand_type: Type::TwoPair,
-                            cards: cards,
-                            bid: bid,
-                            str: str.to_owned()
-                        })
-                    }
-                }
+                None => Some(Hand {
+                    hand_type: Type::TwoPair,
+                    cards: cards,
+                    bid: bid,
+                    str: str.to_owned()
+                })
             }
         },
-        2 => {
-            match j_count {
-                1 => {
-                    if let Some(_) = hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
-                        Some(Hand {
-                            hand_type: Type::FourOfAKind,
-                            cards: cards,
-                            bid: bid,
-                            str: str.to_owned()
-                        })
-                    }
-                    else {
-                        Some(Hand {
-                            hand_type: Type::FullHouse,
-                            cards: cards,
-                            bid: bid,
-                            str: str.to_owned()
-                        })
-                    }
-                },
-                2 | 3 => Some(Hand {
+        (2, 1) => {
+            match hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
+                Some(_) => Some(Hand {
                     hand_type: Type::FourOfAKind,
                     cards: cards,
                     bid: bid,
                     str: str.to_owned()
                 }),
-                _ => {
-                    if let Some(_) = hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
-                        Some(Hand {
-                            hand_type: Type::FullHouse,
-                            cards: cards,
-                            bid: bid,
-                            str: str.to_owned()
-                        })
-                    }
-                    else {
-                        Some(Hand {
-                            hand_type: Type::FourOfAKind,
-                            cards: cards,
-                            bid: bid,
-                            str: str.to_owned()
-                        })
-                    }
-                }
+                None => Some(Hand {
+                    hand_type: Type::FullHouse,
+                    cards: cards,
+                    bid: bid,
+                    str: str.to_owned()
+                })
+            }
+        },
+        (2, 2 | 3) => Some(Hand {
+            hand_type: Type::FourOfAKind,
+            cards: cards,
+            bid: bid,
+            str: str.to_owned()
+        }),
+        (2, _) => {
+            match hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
+                Some(_) => Some(Hand {
+                    hand_type: Type::FullHouse,
+                    cards: cards,
+                    bid: bid,
+                    str: str.to_owned()
+                }),
+                None => Some(Hand {
+                    hand_type: Type::FourOfAKind,
+                    cards: cards,
+                    bid: bid,
+                    str: str.to_owned()
+                })
             }
         },
         //NOTE: spent waaaaaaaay too much time figuring out edge case 'JJJJJ' -> 0 key
-        1 | 0 => Some(Hand {
+        (1 | 0, _) => Some(Hand {
             hand_type: Type::FiveOfAKind,
             cards: cards,
             bid: bid,
@@ -212,7 +198,6 @@ fn build_hand_p2(str: &str, bid: u32) -> Option<Hand> {
 }
 
 //p1
-/*
 fn char_to_u32(char: &char) -> u32 {
     if char.is_digit(10) {
         return char.to_digit(10).unwrap()
@@ -254,16 +239,14 @@ fn build_hand(str: &str, bid: u32) -> Option<Hand> {
             })
         },
         3 => {
-            if let Some(_) = hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
-                Some(Hand {
+            match hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
+                Some(_) => Some(Hand {
                     hand_type: Type::ThreeOfAKind,
                     bid: bid,
                     cards: cards,
                     str: str.to_owned()
-                })
-            }
-            else {
-                Some(Hand {
+                }),
+                None => Some(Hand {
                     hand_type: Type::TwoPair,
                     bid: bid,
                     cards: cards,
@@ -272,23 +255,20 @@ fn build_hand(str: &str, bid: u32) -> Option<Hand> {
             }
         },
         2 => {
-            if let Some(_) = hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
-                Some(Hand {
+            match hm.keys().into_iter().filter(|key| hm[key] == 3).collect::<Vec<_>>().get(0) {
+                Some(_) => Some(Hand {
                     hand_type: Type::FullHouse,
                     bid: bid,
                     cards: cards,
                     str: str.to_owned()
-                })
-            }
-            else {
-                Some(Hand {
+                }),
+                None => Some(Hand {
                     hand_type: Type::FourOfAKind,
                     bid: bid,
                     cards: cards,
                     str: str.to_owned()
                 })
             }
-
         },
         1 => {
             Some(Hand {
@@ -301,7 +281,6 @@ fn build_hand(str: &str, bid: u32) -> Option<Hand> {
         _ => None
     }
 }
-*/
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
