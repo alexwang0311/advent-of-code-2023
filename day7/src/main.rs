@@ -33,6 +33,7 @@ impl PartialOrd for Hand {
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> Ordering {
+        //NOTE: pattern matching comes in pretty handy here
         match other.hand_type.cmp(&self.hand_type) {
             Ordering::Equal => {
                 match (self.cards[0].cmp(&other.cards[0]), self.cards[1].cmp(&other.cards[1]), self.cards[2].cmp(&other.cards[2]), self.cards[3].cmp(&other.cards[3]), self.cards[4].cmp(&other.cards[4])) {
@@ -73,6 +74,7 @@ fn main() {
         //println!("cards: {:?}", entries.iter().map(|e| &e.str).collect::<Vec<&String>>());
         //println!("bids: {:?}", entries.iter().map(|e| usize::try_from(e.bid).unwrap()).collect::<Vec<usize>>());
         
+        //NOTE: MAP REDUCE!!!YEEHAW!!!
         let winning = entries.iter()
                                     .map(|e| usize::try_from(e.bid).unwrap())
                                     .enumerate()
