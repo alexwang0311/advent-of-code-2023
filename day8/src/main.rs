@@ -17,8 +17,8 @@ fn main() {
                     Some((src, dst)) => {
                         //p2
                         if src.chars().last().unwrap() == 'A' {
-                            nodes.push(src.to_owned())
-;                       }
+                            nodes.push(src.to_owned());                       
+                        }
 
                         if let Some((left, right)) = dst[1..dst.len()-1].split_once(",") {
                             hm.insert(src.to_owned(), (left.trim().to_owned(), right.trim().to_owned()));
