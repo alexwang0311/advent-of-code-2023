@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 use std::collections::HashMap;
-
+use num::Integer;
 
 fn main() {
     if let Ok(lines) = read_lines("./input.txt") {
@@ -42,7 +42,7 @@ fn main() {
         //p2
         let steps = nodes.iter().map(|src| find_steps(src, &instructions, &hm)).collect::<Vec<usize>>();
         //println!("{:?}", steps);
-        let steps = steps.iter().fold(1usize, |m, cur| lcm(m, *cur));
+        let steps = steps.iter().fold(1usize, |cur, step| cur.lcm(step));
         println!("{:?}", steps);
 
         //p1
@@ -68,25 +68,6 @@ fn main() {
 
         //println!("{}", steps);
     }
-}
-
-fn gcd(mut a: usize, mut b: usize) -> usize {
-    if a == b { return a; }
-    if b > a {
-        let temp = a;
-        a = b;
-        b = temp;
-    }
-    while b > 0 {
-        let temp = a;
-        a = b;
-        b = temp % b;
-    }
-    return a;
-}
-
-fn lcm(a: usize, b: usize) -> usize {
-    return a * (b / gcd(a, b));
 }
 
 fn find_steps(src: &str, instructions: &str, hm: &HashMap<String, (String, String)>) -> usize {
