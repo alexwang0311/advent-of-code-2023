@@ -160,6 +160,7 @@ fn main() {
                 for (row, line) in map.iter().enumerate() {
                     for (col, c) in line.iter().enumerate() {
                         if area[row][col] {
+                            //NOTE: raycasting method. Refer to https://en.wikipedia.org/wiki/Point_in_polygon
                             let left = pipe.iter().filter(|(_, (x, y))| *x == row && *y < col).filter(|(p, _)| *p == Pipe::NS || *p == Pipe::SW || *p == Pipe::SE).map(|(p, _)| p.to_colored_str()).collect::<Vec<ColoredString>>();
                             let right = pipe.iter().filter(|(_, (x, y))| *x == row && *y > col).filter(|(p, _)| *p == Pipe::NS || *p == Pipe::NW || *p == Pipe::NE).map(|(p, _)| p.to_colored_str()).collect::<Vec<ColoredString>>();
                             /*
