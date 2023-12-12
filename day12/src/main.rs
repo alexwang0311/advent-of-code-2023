@@ -12,16 +12,16 @@ fn main() {
                 //println!("{}", text);
                 if let Some((record, groups)) = text.split_once(" ") {
                     //p2
-                    /*
+                    
                     let record = (record.to_owned() + "?").repeat(5);
                     let record = &record[..record.len() - 1];
                     let groups = (groups.to_owned() + ",").repeat(5);
                     let groups = &groups[..groups.len() - 1];
-                    println!("{} | {}", record, groups);
-                    */
+                    
                     let arrangements: usize = find_arrangements(record, &groups.split(",").map(|e| e.parse::<usize>().unwrap()).collect::<Vec<usize>>());
                     //println!("{}", arrangements);
                     total_arrangements += arrangements;
+                    println!("{}: {} | {} | total: {}", row, record, groups, total_arrangements);
                 }
             }
         }
