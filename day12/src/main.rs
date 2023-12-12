@@ -45,12 +45,13 @@ fn generate_spring_configurations(sprint_len: usize, total_len: usize) -> Vec<St
 
 //P2 idea: reduce recursion # by forwarding the current sequences into recursive calls
 //consider a pattern p = p1, p2, ..., pn; the total comb is comb(p1) * comb(p2) * ... * comb(pn)
-fn generate_all_combinations(groups: &Vec<usize>, size: usize) -> HashSet<String> {
-    //println!("groups: {:?} | size: {}", groups, size);
+fn generate_all_combinations(groups: &Vec<usize>, size: usize, pattern: &str, prev: &str) -> HashSet<String> {
+    println!("groups: {:?} | size: {}", groups, size);
     let mut combos: HashSet<String> = HashSet::new();
     if groups.len() == 0 {
-        combos.insert(vec!['.'; size].into_iter().collect());
-        //println!("nothing | combos: {:?}", combos);
+        let ending: String = vec!['.'; size].into_iter().collect::<String>();
+        combos.insert(format!("{prev}{ending}"));
+        println!("nothing | combos: {:?}", combos);
         return combos;
     }
 
@@ -59,20 +60,14 @@ fn generate_all_combinations(groups: &Vec<usize>, size: usize) -> HashSet<String
     let rest_count = groups[1..].len();
     let first_section_max_len = size - rest_len - rest_count;
     let first_spring_configurations = generate_spring_configurations(first_spring_len, first_section_max_len);
+    let first_spring_configurations = first_spring_configurations.into_iter().filter(|configuration| match_pattern(configuration, &pattern[..configuration.len()])).collect::<Vec<String>>();
+    println!("pattern: {} | configurations: {:?}", pattern, first_spring_configurations);
 
     for first_configuration in first_spring_configurations {
         //TODO: skip seen combos to avoid dup recursion
-        if first_configuration.chars().last().unwrap() == '#' && size > first_configuration.len() {
-            let rest_configurations = generate_all_combinations(&groups[1..].to_vec(), size - first_configuration.len() - 1);
-            for rest_configuration in rest_configurations {
-                combos.insert(format!("{first_configuration}.{rest_configuration}"));
-            }
-        }
-        else {
-            let rest_configurations = generate_all_combinations(&groups[1..].to_vec(), size - first_configuration.len());
-            for rest_configuration in rest_configurations {
-                combos.insert(format!("{first_configuration}{rest_configuration}"));
-            }
+        let rest_configurations = generate_all_combinations(&groups[1..].to_vec(), size - first_configuration.len(), &pattern[first_configuration.len()..], &first_configuration);
+        for rest_configuration in rest_configurations {
+            combos.insert(format!("{first_configuration}{rest_configuration}"));
         }
     }
 
@@ -90,7 +85,7 @@ fn match_pattern(str: &str, pattern: &str) -> bool {
 
 fn find_arrangements(record: &str, groups: &Vec<usize>) -> usize {
     //println!("{} | {:?}", record, groups);
-    let combos: HashSet<String> = generate_all_combinations(groups, record.len());
+    let combos: HashSet<String> = generate_all_combinations(groups, record.len(), record, "");
     //println!("all possible combinations: {:?}", combos);
     combos.into_iter().filter(|combo| match_pattern(combo, record)).count()
 }
@@ -111,7 +106,7 @@ fn test_generate_spring_configurations() {
 
 #[test]
 fn test_generate_all_combinations() {
-    let res = generate_all_combinations(&[3, 2, 1].to_vec(), 12);
+    let res = generate_all_combinations(&[3, 2, 1].to_vec(), 12, "?###????????", "");
     println!("{:?}", res);
 }
 
