@@ -43,6 +43,8 @@ fn generate_spring_configurations(sprint_len: usize, total_len: usize) -> Vec<St
     configurations
 }
 
+//P2 idea: reduce recursion # by forwarding the current sequences into recursive calls
+//consider a pattern p = p1, p2, ..., pn; the total comb is comb(p1) * comb(p2) * ... * comb(pn)
 fn generate_all_combinations(groups: &Vec<usize>, size: usize) -> HashSet<String> {
     //println!("groups: {:?} | size: {}", groups, size);
     let mut combos: HashSet<String> = HashSet::new();
