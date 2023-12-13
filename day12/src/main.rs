@@ -48,13 +48,11 @@ fn generate_spring_configurations(spring_len: usize, total_len: usize) -> Vec<St
 //P2 idea: reduce recursion # by forwarding the current sequences into recursive calls
 //consider a pattern p = p1, p2, ..., pn; the total comb is comb(p1) * comb(p2) * ... * comb(pn)
 fn generate_all_combinations(groups: &Vec<usize>, pattern: &str, prev: String, seen: &mut HashMap<String, HashSet<String>>) -> HashSet<String> {
-    println!("groups: {:?} | prev: {}", groups, prev);
-    /*
-    if seen.contains_key(prev) {
-        println!("seen: {} | {:?}", prev, seen[prev]);
-        return seen[prev].clone();
+    //println!("groups: {:?} | prev: {}", groups, prev);
+    if seen.contains_key(&prev) {
+        //println!("seen: {} | {:?}", prev, seen[&prev]);
+        return seen[&prev].clone();
     }
-    */
 
     let mut combos: HashSet<String> = HashSet::new();
 
@@ -68,6 +66,7 @@ fn generate_all_combinations(groups: &Vec<usize>, pattern: &str, prev: String, s
     }
 
     if prev.len() + groups[1..].into_iter().sum::<usize>() + groups[1..].len() >= pattern.len() {
+        seen.insert(prev.to_owned(), combos.clone());
         return combos;
     }
 
@@ -86,12 +85,11 @@ fn generate_all_combinations(groups: &Vec<usize>, pattern: &str, prev: String, s
             None => true
         }
     }).map(|configuration| format!("{prev}{configuration}")).collect::<Vec<String>>();
-    println!("first: {:?}", first_spring_configurations);
+    //println!("first: {:?}", first_spring_configurations);
 
     for first_configuration in first_spring_configurations {
         let rest_configurations = generate_all_combinations(&groups[1..].to_vec(), pattern, first_configuration.clone(), seen);
-        println!("rest: {} | {:?}", prev, rest_configurations);
-
+        //println!("rest: {} | {:?}", prev, rest_configurations);
         seen.insert(first_configuration, rest_configurations.clone());
 
         for rest_configuration in rest_configurations {
@@ -138,10 +136,10 @@ fn test_generate_spring_configurations() {
 #[test]
 fn test_generate_all_combinations() {
     let mut seen: HashMap<String, HashSet<String>> = HashMap::new();
-    let pattern = "?###????????";
-    //let pattern = "?#?#?#?#?#?#?#???#?#?#?#?#?#?#???#?#?#?#?#?#?#???#?#?#?#?#?#?#???#?#?#?#?#?#?#?";
-    let res = generate_all_combinations(&[3, 2, 1].to_vec(), pattern, String::from(""), &mut seen);
-    //let res = generate_all_combinations(&[1,3,1,6,1,3,1,6,1,3,1,6,1,3,1,6,1,3,1,6].to_vec(), pattern.len(), pattern, "", &mut seen);
+    //let pattern = "?###????????";
+    //let res = generate_all_combinations(&[3, 2, 1].to_vec(), pattern, String::from(""), &mut seen);
+    let pattern = "?#?#?#?#?#?#?#???#?#?#?#?#?#?#???#?#?#?#?#?#?#???#?#?#?#?#?#?#???#?#?#?#?#?#?#?";
+    let res = generate_all_combinations(&[1,3,1,6,1,3,1,6,1,3,1,6,1,3,1,6,1,3,1,6].to_vec(), pattern, String::from(""), &mut seen);
     println!("{:?} | {}", res, res.len());
 }
 
