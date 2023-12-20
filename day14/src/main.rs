@@ -5,7 +5,7 @@ use std::path::Path;
 fn main() {
     let mut platform: Vec<Vec<char>> = Vec::new();
 
-    if let Ok(lines) = read_lines("./test.txt") {
+    if let Ok(lines) = read_lines("./input.txt") {
         for (row, line) in lines.into_iter().enumerate() {
             if let Ok(text) = line {
                 //println!("{}", text);
@@ -24,11 +24,12 @@ fn main() {
 
     for v in platform {
         let col = v.iter().collect::<String>();
-        let chunks = col.split("#");
+        let col = col.replace("#", "|#|");
+        let chunks = col.split("|").filter(|c| !c.is_empty());
         
         let mut tilted = String::from("");
         for chunk in chunks {
-            if chunk.is_empty() {
+            if chunk.chars().filter(|c| *c == '#').count() > 0 {
                 tilted.push_str("#");
             }
             else {
@@ -37,11 +38,26 @@ fn main() {
                 let new_area = vec!['O'; rocks].iter().chain(vec!['.'; empty_space].iter()).collect::<String>();
                 tilted.push_str(&new_area);
             }
-            print!("{}|", chunk);
+            //print!("{}|", chunk);
         }
         println!("tilted: {}", tilted);
         tilted_platform.push(tilted);
     }
+    println!("--------------------------------------------");
+
+    let tilted_platform = tilted_platform.iter().map(|s| s.chars().collect::<Vec<char>>()).collect::<Vec<Vec<char>>>();
+    let tilted_platform = transpose(tilted_platform);
+
+    print_platform(&tilted_platform);
+
+    let sum = tilted_platform.iter().enumerate().fold(0, |sum, (index, v)| {
+        let rocks = v.iter().filter(|&c| *c == 'O').count();
+        let multiplier = tilted_platform.len() - index;
+        let sum = sum + rocks * multiplier;
+        sum
+    });
+
+    println!("{}", sum);
 }
 
 fn print_platform(platform: &Vec<Vec<char>>) {
