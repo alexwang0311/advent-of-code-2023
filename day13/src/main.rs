@@ -27,13 +27,106 @@ fn main() {
             }
             println!();
 
-            total += find_reflection(&pattern);
+            //total += find_reflection(&pattern);
+            total += find_reflection_p2(&pattern);
 
             println!();
         }
 
         println!("{}", total);
     }
+}
+
+fn edit_distance(a: &str, b: &str) -> usize {
+    let mut d: usize = 0;
+    for (c1, c2) in a.chars().zip(b.chars()) {
+        if c1 != c2 {
+            d += 1;
+        }
+    }
+    d
+}
+
+fn find_reflection_p2(pattern: &Vec<String>) -> usize {
+    if edit_distance(&pattern[0], &pattern[1]) == 1 {
+        return 1 * 100;
+    }
+    if edit_distance(&pattern[pattern.len() - 2], &pattern[pattern.len() - 1]) == 1 {
+        return (pattern.len() - 1) * 100;
+    }
+
+    let row_groups = map_rows(pattern).values().filter(|&v| v.len() >= 2).cloned().collect::<Vec<Vec<usize>>>();
+    let mut reflections: HashMap<usize, Vec<(usize, usize)>> = HashMap::new();
+
+    for group in row_groups {
+        let pairs = transform_into_pairs(&group);
+        for pair in pairs {
+            if (pair.0 + pair.1) % 2 == 1 {
+                let count = reflections.entry((pair.0 + pair.1) / 2 + 1).or_insert(Vec::new());
+                count.push(pair);
+            }
+        }
+    }
+    println!("rows: {:?}", reflections);
+    for (index, v) in reflections {
+        if index.min(pattern.len() - index) == (v.len() + 1) {
+            let mut indices: Vec<usize> = ((index - v.len() - 1)..(index + v.len() + 1)).collect();
+            println!("row indices: {:?}", indices);
+            let mut existing: HashSet<usize> = HashSet::new();
+            for pair in v {
+                existing.insert(pair.0);
+                existing.insert(pair.1);
+            }
+            indices.retain(|i| !existing.contains(i));
+            println!("remaining: {:?}", indices);
+            if edit_distance(&pattern[indices[0]], &pattern[indices[1]]) == 1 {
+                println!("row: {}", index);
+                return index * 100;
+            }
+        }
+    }
+
+    let pattern = transpose_pattern(pattern);
+
+    if edit_distance(&pattern[0], &pattern[1]) == 1 {
+        return 1;
+    }
+    if edit_distance(&pattern[pattern.len() - 2], &pattern[pattern.len() - 1]) == 1 {
+        return pattern.len() - 1;
+    }
+
+    let col_groups = map_rows(&pattern).values().filter(|&v| v.len() >= 2).cloned().collect::<Vec<Vec<usize>>>();
+    let mut reflections: HashMap<usize, Vec<(usize, usize)>> = HashMap::new();
+
+    for group in col_groups {
+        let pairs = transform_into_pairs(&group);
+        for pair in pairs {
+            if (pair.0 + pair.1) % 2 == 1 {
+                let count = reflections.entry((pair.0 + pair.1) / 2 + 1).or_insert(Vec::new());
+                count.push(pair);
+            }
+        }
+    }
+    println!("cols: {:?}", reflections);
+    for (index, v) in reflections {
+        if index.min(pattern.len() - index) == (v.len() + 1) {
+            let mut indices: Vec<usize> = ((index - v.len() - 1)..(index + v.len() + 1)).collect();
+            println!("col indices: {:?}", indices);
+            let mut existing: HashSet<usize> = HashSet::new();
+            for pair in v {
+                existing.insert(pair.0);
+                existing.insert(pair.1);
+            }
+            indices.retain(|i| !existing.contains(i));
+            println!("remaining: {:?}", indices);
+            if edit_distance(&pattern[indices[0]], &pattern[indices[1]]) == 1 {
+                println!("col: {}", index);
+                return index;
+            }
+        }
+    }
+
+    panic!("this should not happen")
 }
 
 fn find_reflection(pattern: &Vec<String>) -> usize {
@@ -50,14 +143,16 @@ fn find_reflection(pattern: &Vec<String>) -> usize {
         }
     }
     println!("rows: {:?}", reflections);
-    for kv in reflections {
-        if kv.0.min(pattern.len() - kv.0) == kv.1.len() {
-            println!("row: {}", kv.0);
-            return kv.0 * 100;
+    for (index, v) in reflections {
+        if index.min(pattern.len() - index) == v.len() {
+            println!("row: {}", index);
+            return index * 100;
         }
     }
 
-    let col_groups = map_cols(pattern).values().filter(|&v| v.len() >= 2).cloned().collect::<Vec<Vec<usize>>>();
+    let pattern = transpose_pattern(pattern);
+
+    let col_groups = map_rows(&pattern).values().filter(|&v| v.len() >= 2).cloned().collect::<Vec<Vec<usize>>>();
     let mut reflections: HashMap<usize, Vec<(usize, usize)>> = HashMap::new();
 
     for group in col_groups {
@@ -70,10 +165,10 @@ fn find_reflection(pattern: &Vec<String>) -> usize {
         }
     }
     println!("cols: {:?}", reflections);
-    for kv in reflections {
-        if kv.0.min(pattern[0].len() - kv.0) == kv.1.len() {
-            println!("col: {}", kv.0);
-            return kv.0;
+    for (index, v) in reflections {
+        if index.min(pattern.len() - index) == v.len() {
+            println!("col: {}", index);
+            return index;
         }
     }
 
@@ -100,18 +195,11 @@ where
         .collect()
 }
 
-fn map_cols(pattern: &Vec<String>) -> HashMap<String, Vec<usize>> {
+fn transpose_pattern(pattern: &Vec<String>) -> Vec<String> {
     let pattern = pattern.iter().map(|str| str.chars().collect::<Vec<char>>()).collect::<Vec<Vec<char>>>();
     let pattern = transpose(pattern).iter().map(|v| v.iter().collect()).collect::<Vec<String>>();
 
-    let mut map: HashMap<String, Vec<usize>> = HashMap::new();
-    for (col, line) in pattern.iter().enumerate() {
-        let indices = map.entry(line.to_string()).or_insert(Vec::new());
-        indices.push(col);
-    }
-
-    //println!("{:?}", map);
-    map
+    pattern
 }
 
 fn map_rows(pattern: &Vec<String>) -> HashMap<String, Vec<usize>> {
