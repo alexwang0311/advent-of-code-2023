@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::collections::HashMap;
 
 fn main() {
     let mut platform: Vec<Vec<char>> = Vec::new();
@@ -14,13 +15,107 @@ fn main() {
         }
     }
 
-    print_platform(&platform);
+    //print_platform(&platform);
 
+    let mut seen: HashMap<Vec<Vec<char>>, usize> = HashMap::new();
+    let total: usize = 1_000_000_000usize;
+    for i in 0..total {
+        println!("{}", i);
+        platform = spin(&platform);
+
+        if seen.contains_key(&platform) {
+            println!("back to {}", seen[&platform]);
+
+            let starting_index = seen[&platform];
+            let cycle = i - seen[&platform];
+            let remaining = total - i - 1;
+            let offset = remaining % cycle;
+
+            let (platform, v) = seen.iter().filter(|&(k, v)| *v == starting_index + offset).next().unwrap();
+            println!("cycle: {} | remaining: {} | offset: {} | index: {}", cycle, remaining, offset, v);
+
+            let sum = platform.iter().enumerate().fold(0, |sum, (index, v)| {
+                let rocks = v.iter().filter(|&c| *c == 'O').count();
+                let multiplier = platform.len() - index;
+                let sum = sum + rocks * multiplier;
+                sum
+            });
+        
+            println!("{}", sum);
+
+            break;
+        }
+        else {
+            seen.insert(platform.clone(), i);
+        }
+    }
+
+    //print_platform(&platform);
+
+    //p1
+    /* 
     let platform = transpose(platform);
 
     print_platform(&platform);
 
-    let mut tilted_platform: Vec<String> = Vec::new();
+    let tilted_platform = tilt(&platform);
+    println!("--------------------------------------------");
+
+    let tilted_platform = transpose(tilted_platform);
+
+    print_platform(&tilted_platform);
+
+    let sum = tilted_platform.iter().enumerate().fold(0, |sum, (index, v)| {
+        let rocks = v.iter().filter(|&c| *c == 'O').count();
+        let multiplier = tilted_platform.len() - index;
+        let sum = sum + rocks * multiplier;
+        sum
+    });
+
+    println!("{}", sum);
+    */
+}
+
+fn spin(platform: &Vec<Vec<char>>) -> Vec<Vec<char>> {
+    let platform = transpose(platform.clone());
+    let platform = tilt(&platform);
+    let platform = transpose(platform); // north
+    //println!("-------------north--------------");
+    //print_platform(&platform);
+
+    let platform = tilt(&platform); // west
+    //println!("-------------west--------------");
+    //print_platform(&platform);
+
+    let platform = transpose(platform).iter_mut().map(|v| {
+        v.reverse();
+        v.clone()
+    }).collect::<Vec<Vec<char>>>();
+    let mut platform = tilt(&platform);
+    let mut platform = transpose(platform.iter_mut().map(|v| {
+        v.reverse();
+        v.clone()
+    }).collect::<Vec<Vec<char>>>()); // south
+    //println!("-------------south--------------");
+    //print_platform(&platform);
+
+    let platform = platform.iter_mut().map(|v| {
+        v.reverse();
+        v.clone()
+    }).collect::<Vec<Vec<char>>>();
+    let mut platform = tilt(&platform);
+    let platform = platform.iter_mut().map(|v| {
+        v.reverse();
+        v.clone()
+    }).collect::<Vec<Vec<char>>>(); // east
+    //println!("-------------east--------------");
+    //print_platform(&platform);
+
+    platform.clone()
+}
+
+fn tilt(platform: &Vec<Vec<char>>) -> Vec<Vec<char>> {
+    let mut tilted_platform: Vec<Vec<char>> = Vec::new();
 
     for v in platform {
         let col = v.iter().collect::<String>();
@@ -40,31 +135,19 @@ fn main() {
             }
             //print!("{}|", chunk);
         }
-        println!("tilted: {}", tilted);
-        tilted_platform.push(tilted);
+        //println!("tilted: {}", tilted);
+        tilted_platform.push(tilted.chars().collect::<Vec<char>>());
     }
-    println!("--------------------------------------------");
+    //println!("--------------------------------------------");
 
-    let tilted_platform = tilted_platform.iter().map(|s| s.chars().collect::<Vec<char>>()).collect::<Vec<Vec<char>>>();
-    let tilted_platform = transpose(tilted_platform);
-
-    print_platform(&tilted_platform);
-
-    let sum = tilted_platform.iter().enumerate().fold(0, |sum, (index, v)| {
-        let rocks = v.iter().filter(|&c| *c == 'O').count();
-        let multiplier = tilted_platform.len() - index;
-        let sum = sum + rocks * multiplier;
-        sum
-    });
-
-    println!("{}", sum);
+    tilted_platform
 }
 
 fn print_platform(platform: &Vec<Vec<char>>) {
     for v in platform {
         println!("{}", v.iter().collect::<String>());
     }
-    println!("--------------------------------------------");
+    //println!("--------------------------------------------");
 }
 
 fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>>
