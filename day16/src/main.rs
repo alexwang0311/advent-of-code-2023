@@ -23,6 +23,40 @@ fn main() {
     }
 
     //println!("{:?}", map);
+    //p2
+    let mut max: usize = 0;
+    for i in 0..map[0].len() {
+        //from top
+        let mut seen: HashSet<(usize, usize, Direction)> = HashSet::new();
+        ray_march(&map, &mut seen, 0, i as isize, &Direction::Down);
+        let count = seen.iter().map(|(x, y, _)| (*x, *y)).collect::<HashSet<(usize, usize)>>().len();
+        max = max.max(count);
+
+        //from bot
+        seen.clear();
+        ray_march(&map, &mut seen, (map.len() - 1) as isize, i as isize, &Direction::Up);
+        let count = seen.iter().map(|(x, y, _)| (*x, *y)).collect::<HashSet<(usize, usize)>>().len();
+        max = max.max(count);
+    }
+
+    for i in 0..map.len() {
+        //from left
+        let mut seen: HashSet<(usize, usize, Direction)> = HashSet::new();
+        ray_march(&map, &mut seen, i as isize, 0, &Direction::Right);
+        let count = seen.iter().map(|(x, y, _)| (*x, *y)).collect::<HashSet<(usize, usize)>>().len();
+        max = max.max(count);
+
+        //from right
+        seen.clear();
+        ray_march(&map, &mut seen, i as isize, (map[0].len() - 1) as isize, &Direction::Left);
+        let count = seen.iter().map(|(x, y, _)| (*x, *y)).collect::<HashSet<(usize, usize)>>().len();
+        max = max.max(count);
+    }
+
+    println!("{}", max);
+
+    //p1
+    /* 
     let mut seen: HashSet<(usize, usize, Direction)> = HashSet::new();
 
     ray_march(&map, &mut seen, 0, 0, &Direction::Right);
@@ -44,6 +78,7 @@ fn main() {
     }
 
     println!("{}", count);
+    */
 }
 
 fn ray_march(map: &Vec<Vec<char>>, seen: &mut HashSet<(usize, usize, Direction)>, x: isize, y: isize, dir: &Direction) {
